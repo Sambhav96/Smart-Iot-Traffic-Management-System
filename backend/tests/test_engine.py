@@ -73,6 +73,9 @@ class TestSimulationTick:
 class TestAdaptiveSignalLogic:
     def test_adaptive_mode_selects_lane_with_most_traffic(self, engine):
         """Test that adaptive mode selects the lane with the most vehicles."""
+        # Disable random sensor updates for deterministic test
+        engine._disable_sensor_updates = True
+
         # Set adaptive mode
         engine.state.intersection.mode = Mode.ADAPTIVE
 

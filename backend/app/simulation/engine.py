@@ -15,6 +15,7 @@ class SimulationEngine:
     def __init__(self):
         self.state = self._initialize_default_state()
         self.traffic_controller = TrafficController()
+        self._disable_sensor_updates = False  # For deterministic testing
 
     def _initialize_default_state(self) -> SimulationState:
         """Creates the initial 4-lane intersection."""
@@ -46,19 +47,21 @@ class SimulationEngine:
         intersection = self.state.intersection
 
         # 1. Update Sensors (generate random traffic fluctuations)
-        for lane in intersection.lanes:
-            SensorSimulator.generate_sensor_data(lane, intersection.scenario)
+        # Skip sensor updates if disabled (for deterministic testing)
+        if not self._disable_sensor_updates:
+            for lane in intersection.lanes:
+                SensorSimulator.generate_sensor_data(lane, intersection.scenario)
 
-        # Occasionally bias one lane for higher traffic to keep demos visually active.
-        if intersection.mode != Mode.ADAPTIVE and random.random() < 0.2:  # 20% chance per tick
-            biased_lane = random.choice(intersection.lanes)
-            extra = random.randint(2, 5)
-            biased_lane.vehicle_count = min(
-                MAX_VEHICLES_PER_LANE, biased_lane.vehicle_count + extra
-            )
-            biased_lane.congestion_level = (
-                biased_lane.vehicle_count / MAX_VEHICLES_PER_LANE
-            )
+            # Occasionally bias one lane for higher traffic to keep demos visually active.
+            if intersection.mode != Mode.ADAPTIVE and random.random() < 0.2:  # 20% chance per tick
+                biased_lane = random.choice(intersection.lanes)
+                extra = random.randint(2, 5)
+                biased_lane.vehicle_count = min(
+                    MAX_VEHICLES_PER_LANE, biased_lane.vehicle_count + extra
+                )
+                biased_lane.congestion_level = (
+                    biased_lane.vehicle_count / MAX_VEHICLES_PER_LANE
+                )
 
         # 2. Update Traffic Logic (handle lights and waiting times)
         signal_events = self.traffic_controller.update_signals(intersection)
