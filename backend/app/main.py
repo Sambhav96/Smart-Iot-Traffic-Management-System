@@ -37,3 +37,7 @@ app.include_router(analytics_router, prefix="/api", tags=["Analytics"])
 @app.get("/")
 def root():
     return {"message": "Welcome to the Smart Traffic Management System API"}
+
+@app.get("/health")
+def health_root():
+    return {"status": "ok"}
